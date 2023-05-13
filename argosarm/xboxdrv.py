@@ -166,7 +166,7 @@ def normalize_xboxdrv_input(controller_inputs):
     return normalized_inputs
 
 
-def f710():
+def subscribe_to_inputs(f: callable):
     logging.info("Starting F710 controller process")
     proc = subprocess.Popen(
         ["sudo", "xboxdrv", "--detach-kernel-driver"], stdout=subprocess.PIPE
@@ -183,4 +183,4 @@ def f710():
 
         normalized_inputs = normalize_xboxdrv_input(controller_inputs)
 
-        print(normalized_inputs)
+        f(normalized_inputs)
