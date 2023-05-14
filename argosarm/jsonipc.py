@@ -6,7 +6,6 @@ import pathlib
 
 
 class Pipe:
-    # Opening a FIFO pipe will block until both a reader and a writer are available
     def __init__(self, path: pathlib.Path):
         self.path = path
         self.listeners = list()
@@ -17,6 +16,7 @@ class Pipe:
 
     def listen(self):
         # Open FIFO pipe file with line buffering
+        # Opening a FIFO pipe will block until both a reader and a writer are available
         f = open(self.path, "r", buffering=1)
         logging.info(f"Listening on pipe {self.path}")
 
