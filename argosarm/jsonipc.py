@@ -9,7 +9,8 @@ class Pipe:
     def __init__(self, path: pathlib.Path):
         self.path = path
         self.listeners = list()
-        os.mkfifo(self.path, mode=0o660)
+        if not os.path.exists(self.path):
+            os.mkfifo(self.path, mode=0o660)
 
     def add_listener(self, listener: callable):
         self.listeners.append(listener)
@@ -20,14 +21,24 @@ class Pipe:
         f = open(self.path, "r", buffering=1)
         logging.info(f"Listening on pipe {self.path}")
 
+        read_buffer = ""
         while True:
             line = f.read()
             if len(line) == 0:
                 continue
-            o = json.loads(line)
+            read_buffer += line
+            newline_index = read_buffer.find("\n")
+            if newline_index == -1:
+                continue
+            json_str = read_buffer[:newline_index]
+            read_buffer = read_buffer[newline_index + 1 :]
+            try:
+                o = json.loads(json_str)
+            except json.JSONDecodeError as e:
+                logging.error(f"Failed to decode JSON: {e} (json_str={json_str})")
+                continue
             for listener in self.listeners:
                 listener(o)
-
         f.close()
 
     def write(self, data: str):
